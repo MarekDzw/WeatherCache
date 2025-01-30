@@ -1,3 +1,4 @@
+using StackExchange.Redis;
 using WeatherCache.Repositories;
 using WeatherCache.Services;
 
@@ -6,8 +7,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddHttpClient<WeatherRepository>();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost";
+    options.InstanceName = "WeatherCache";
+    options.ConfigurationOptions = new ConfigurationOptions
+    {
+        AbortOnConnectFail = true,
+        EndPoints = { options.Configuration }
+    };
+});
 builder.Services.AddScoped<WeatherService>();
+builder.Services.AddHttpClient<WeatherRepository>();
+builder.Services.AddHttpClient();
 
 
 builder.Services.AddEndpointsApiExplorer();
